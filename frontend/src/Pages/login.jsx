@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom'
 
 function login() {
   const [input, setInput] = useState({ username: "", password: "" });
+  const [error  ,setError]=useState("")
   const navigate=useNavigate()
 
+  document.title='Login Page'
 
   const handlelogin = () => {
     axios.post("http://127.0.0.1:8000/", input, {
@@ -21,6 +23,7 @@ function login() {
       })
       .catch((error) => {
         console.log(error.response.data.error);
+        setError(error.response.data.errors)
       });
   };
 
@@ -28,6 +31,7 @@ function login() {
     <div className="min-h-screen bg-gray-300 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-md p-8">
         <h2 className="text-center text-2xl font-semibold">Login</h2>
+        {error && <p className="font-semibold text-red-600">{error}</p>}
         <div className="">
           <label htmlFor="username" className="block font-medium p-3">
             username

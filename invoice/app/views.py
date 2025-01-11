@@ -15,35 +15,35 @@ class AdminLogin(APIView):
 
         user=authenticate(username=username,password=password)
         
-        if user and user.is_staff and user.is_superuser:
-            refresh=RefreshToken.for_user(user)
-            print(refresh.access_token)
-            return Response(
+        if user:
+            if user.is_staff and user.is_superuser:
+                refresh=RefreshToken.for_user(user)
+                print(refresh.access_token)
+                return Response(
                 {'message':'logged in successfully',
                  'refresh_token':str(refresh),
                  'access_token':str(refresh.access_token)
                  },
                 status=status.HTTP_200_OK
-            )
-        
-        else:
-            return  Response({'error':'only admin can login'}, 
+            )      
+            else:
+                return  Response({'error':'only admin can login'}, 
                             status=status.HTTP_401_UNAUTHORIZED)
 
+        return Response({'error':'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Dashboard(APIView):
-
     permission_classes=[IsAuthenticated]
+
     def get(self,request):
         customers=Customer.objects.all()
         products=Product.objects.all()
-        
         return Response({"message":"dashbooard", 'customer':customers}, status=status.HTTP_200_OK)
     
 
-class Logout(APIView):
-    permission_classes=[IsAuthenticated]
+# class Logout(APIView):
+#     permission_classes=[IsAuthenticated]
 
-    def post(self, request):
-        return Response({"message":'logout succesfully'}, status=status.HTTP_200_OK)
+#     def post(self, request):
+#         return Response({"message":'logout succesfully'}, status=status.HTTP_200_OK)
