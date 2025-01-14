@@ -37,9 +37,9 @@ class Dashboard(APIView):
     permission_classes=[IsAuthenticated]
 
     def get(self,request):
-        customers=Customer.objects.all()
-        products=Product.objects.all()
-        return Response({"message":"dashbooard", 'customer':customers}, status=status.HTTP_200_OK)
+        # customers=Customer.objects.all()
+        # products=Product.objects.all()
+        return Response({"message":"dashbooard"}, status=status.HTTP_200_OK)
     
 
 # class Logout(APIView):

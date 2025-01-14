@@ -1,29 +1,30 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 
 function login() {
   const [input, setInput] = useState({ username: "", password: "" });
-  const [error  ,setError]=useState("")
-  const navigate=useNavigate()
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  document.title='Login Page'
+  document.title = "Login Page";
 
   const handlelogin = () => {
-    axios.post("http://127.0.0.1:8000/", input, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    axios
+      .post("http://127.0.0.1:8000/", input, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => {
         console.log(response.data);
-        localStorage.setItem("access_token",response.data.access_token)
+        localStorage.setItem("access_token", response.data.access_token);
 
-        navigate('/dashboard');
+        navigate("/dashboard");
       })
       .catch((error) => {
         console.log(error.response.data.error);
-        setError(error.response.data.errors)
+        setError(error.response.data.error);
       });
   };
 

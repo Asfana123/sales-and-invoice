@@ -23,7 +23,11 @@ const Dashboard = () => {
         console.log(Response.data)
       })
       .catch((error) => {
-        console.log(error.Response)
+        if (error.response?.status === 401) {
+          
+          localStorage.removeItem("access_token");
+          navigate("/");
+        }
       })
     }
   }, [navigate]) 
@@ -42,14 +46,17 @@ const Dashboard = () => {
         <div className="flex flex-col gap-4">
           <button
             onClick={() => navigate('/customer')}
-            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-lg hover:bg-blue-600 transition duration-300"
+            className="px-6 py-3 bg-black text-white rounded-md"
           >
             Customers
           </button>
+
+          <button onClick={()=>navigate('/product')} 
+            className='px-6  py-3 bg-black text-white rounded-md'>Products</button>
   
           <button
             onClick={logout}
-            className="px-6 py-3 bg-red-500 text-white rounded-md shadow-lg hover:bg-red-600 transition duration-300"
+            className="px-6 py-3 bg-red-500 text-white rounded-md shadow-lg hover:bg-red-600 "
           >
             Logout
           </button>

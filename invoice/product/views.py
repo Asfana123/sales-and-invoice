@@ -17,13 +17,19 @@ class ProductApiView(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Product.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-           
-        products=Product.objects.all()
+
+        search=request.query_params.get('search','')
+
+        if search:
+            products=Product.objects.filter(name__icontains=search)
+        else:
+            products=Product.objects.all()
+        
         serializer=ProductSerializer(products,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self,request):
-        serializer=ProductSerializer(request.data)
+        serializer=ProductSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save()

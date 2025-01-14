@@ -16,7 +16,6 @@ const Customers = () => {
     address: "",
   });
   const [error, setError] = useState("");
-
   const token = localStorage.getItem("access_token");
   const [modal, setModal] = useState(false);
 
@@ -37,13 +36,16 @@ const Customers = () => {
       console.log(customers);
     })
 
-    .catch((error) => console.log(error));
+    .catch((error) =>{if (error.response?.status===401){
+      localStorage.removeItem('accss_token')
+      navigate('/')
+    }})
 }
 
 
 const handleApiError=(error)=>{
-  if (error.response.data && error.response){
-    setError(error.response.data.email || error.response.data.phone || "An error occurred");
+  if (error.response && error.response.data){
+    setError(error.response.data.email  || "An error occurred");
   }
   else{
     setError('')
@@ -53,11 +55,11 @@ const handleApiError=(error)=>{
 const validation=()=>{
   if (!input.name || !input.email||!input.phone||!input.address){
     setError('Every field should be required');
-    return False
+    return false
   }
   else{
     setError('')
-    return True
+    return true
   }
 }
   useEffect(() => {
@@ -88,6 +90,7 @@ const validation=()=>{
       .then((response) => {
         setModal(false);
         setInput({});
+        console.log(input)
         setError('')
         fetchcustomer()
       })
@@ -97,6 +100,7 @@ const validation=()=>{
   };
 
   const getCustomer = (id) => {
+    console.log(input)
     console.log(id);
     axios
       .get(`http://127.0.0.1:8000/customer/${id}`, {
@@ -105,16 +109,10 @@ const validation=()=>{
       .then((response) => {
         console.log(response.data);
         setModal(true);
-        setInput({
-          id: response.data.id,
-          name: response.data.name,
-          email: response.data.email,
-          phone: response.data.phone,
-          address: response.data.address,
-        });
+        setInput(response.data);
       })
-
-      handleApiError(error)
+      .catch((error)=>
+      handleApiError(error))
   };
 
   const updatecustomer = (id) => {
