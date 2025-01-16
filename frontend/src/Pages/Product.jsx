@@ -56,11 +56,17 @@ const Product = () => {
   };
 
   useEffect(() => {
+    console.log('rendering')
     const timeout = setTimeout(() => {
       fetchproduct(search);
     }, 300);
     return () => clearTimeout(timeout);
+  
   }, [search]);
+  // else{
+  //   fetchproduct()
+  // }
+
 
   const handleSearch = (query) => {
     setSearch(query);
@@ -69,6 +75,7 @@ const Product = () => {
   const addProduct = (e) => {
     e.preventDefault();
     if (!validate()) return;
+
     axios
       .post("http://127.0.0.1:8000/product/", input, {
         headers: { Authorization: `Bearer ${token}` },
@@ -99,7 +106,6 @@ const Product = () => {
   };
 
   const updateProduct = (id) => {
-    // e.preventDefault()
     axios
       .patch(`http://127.0.0.1:8000/product/${id}/`, input, {
         headers: { Authorization: `Bearer ${token}` },

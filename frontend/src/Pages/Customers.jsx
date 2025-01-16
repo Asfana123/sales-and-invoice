@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "font-awesome/css/font-awesome.min.css";
 
 const Customers = () => {
-  document.title='Customers'
-  
+  document.title = "Customers";
+
   const navigate = useNavigate();
   const [customers, setCustomer] = useState([]);
   const [input, setInput] = useState({
@@ -24,61 +24,58 @@ const Customers = () => {
     return phoneRegex.test(phone);
   };
 
-  const fetchcustomer=()=>{axios
-    .get("http://127.0.0.1:8000/customer", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then((response) => {
-      console.log(response.data);
-      setCustomer(response.data);
-      console.log(customers);
-    })
+  const fetchcustomer = () => {
+    axios
+      .get("http://127.0.0.1:8000/customer", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setCustomer(response.data);
+        console.log(customers);
+      })
 
-    .catch((error) =>{if (error.response?.status===401){
-      localStorage.removeItem('accss_token')
-      navigate('/')
-    }})
-}
+      .catch((error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem("accss_token");
+          navigate("/");
+        }
+      });
+  };
 
+  const handleApiError = (error) => {
+    if (error.response && error.response.data) {
+      setError(error.response.data.email || "An error occurred");
+    } else {
+      setError("");
+    }
+  };
 
-const handleApiError=(error)=>{
-  if (error.response && error.response.data){
-    setError(error.response.data.email  || "An error occurred");
-  }
-  else{
-    setError('')
-  }
-}
-
-const validation=()=>{
-  if (!input.name || !input.email||!input.phone||!input.address){
-    setError('Every field should be required');
-    return false
-  }
-  else{
-    setError('')
-    return true
-  }
-}
+  const validation = () => {
+    if (!input.name || !input.email || !input.phone || !input.address) {
+      setError("Every field should be required");
+      return false;
+    } else {
+      setError("");
+      return true;
+    }
+  };
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     console.log(token);
     if (!token) {
       navigate("/");
     } else {
-      
-    fetchcustomer()
-  }
+      fetchcustomer();
+    }
   }, [navigate]);
 
-
-
-
   const addCustomer = () => {
-    if (!validation()){
-      return}
+    if (!validation()) {
+      return;
+    }
     if (!validatePhoneNumber(input.phone)) {
       setError("Enter a valid phone number");
       return;
@@ -90,17 +87,17 @@ const validation=()=>{
       .then((response) => {
         setModal(false);
         setInput({});
-        console.log(input)
-        setError('')
-        fetchcustomer()
+        console.log(input);
+        setError("");
+        fetchcustomer();
       })
       .catch((error) => {
-        handleApiError(error)  
+        handleApiError(error);
       });
   };
 
   const getCustomer = (id) => {
-    console.log(input)
+    console.log(input);
     console.log(id);
     axios
       .get(`http://127.0.0.1:8000/customer/${id}`, {
@@ -111,8 +108,7 @@ const validation=()=>{
         setModal(true);
         setInput(response.data);
       })
-      .catch((error)=>
-      handleApiError(error))
+      .catch((error) => handleApiError(error));
   };
 
   const updatecustomer = (id) => {
@@ -128,21 +124,25 @@ const validation=()=>{
         console.log(response.data);
         setModal(false);
         setCustomer((prevCus) =>
-          prevCus.map((cust) => (cust.id === id ? { ...cust, ...response.data } : cust))
-        );        
+          prevCus.map((cust) =>
+            cust.id === id ? { ...cust, ...response.data } : cust
+          )
+        );
         setInput();
       })
-      .catch((error) => handleApiError(error))
+      .catch((error) => handleApiError(error));
   };
 
-  const deleteCustomer=(id)=>{
-    axios.delete(`http://127.0.0.1:8000/customer/${id}/`, 
-      {headers:{Authorization: `Bearer ${token}`
-      }})
-      .then(()=>{setCustomer((prev)=>prev.filter((customer)=>customer.id!=id))})
-      .catch((error)=>handleApiError(error))
-  }
-
+  const deleteCustomer = (id) => {
+    axios
+      .delete(`http://127.0.0.1:8000/customer/${id}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(() => {
+        setCustomer((prev) => prev.filter((customer) => customer.id != id));
+      })
+      .catch((error) => handleApiError(error));
+  };
 
   return (
     <div className="min-h-screen p-8 ">
@@ -173,7 +173,9 @@ const validation=()=>{
                   <td className="">{cust.name}</td>
                   <td>{cust.email}</td>
                   <td>{cust.phone}</td>
-                  <td className='break-words max-w-[200px] p-2'>{cust.address}</td>
+                  <td className="break-words max-w-[200px] p-2">
+                    {cust.address}
+                  </td>
                   <td>
                     <button className="text-black p-2">
                       <i
@@ -182,7 +184,10 @@ const validation=()=>{
                         onClick={() => getCustomer(cust.id)}
                       ></i>
                     </button>
-                    <i className="fa fa-trash text-black p-2 ml-2 aria-hidden" onClick={()=>deleteCustomer(cust.id)} />
+                    <i
+                      className="fa fa-trash text-black p-2 ml-2 aria-hidden"
+                      onClick={() => deleteCustomer(cust.id)}
+                    />
                   </td>
                 </tr>
               ))}
@@ -227,7 +232,7 @@ const validation=()=>{
               <input
                 type="email"
                 name="email"
-                disabled={input.id ? true : false} 
+                disabled={input.id ? true : false}
                 placeholder="enter customer email"
                 value={input.email}
                 onChange={(e) =>
@@ -236,7 +241,7 @@ const validation=()=>{
                     [e.target.name]: e.target.value,
                   })
                 }
-                className="p-2 w-full border border-lg rounded-md" 
+                className="p-2 w-full border border-lg rounded-md"
               />
 
               <label htmlFor="email">Phone Number</label>

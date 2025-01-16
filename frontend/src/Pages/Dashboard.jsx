@@ -53,7 +53,9 @@ const Dashboard = () => {
 
           <button onClick={()=>navigate('/product')} 
             className='px-6  py-3 bg-black text-white rounded-md'>Products</button>
-  
+
+          <button onClick={()=>navigate('/invoice')}
+            className='p-2 bg-black text-white rounded-md'>Invoice</button>
           <button
             onClick={logout}
             className="px-6 py-3 bg-red-500 text-white rounded-md shadow-lg hover:bg-red-600 "

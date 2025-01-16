@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from .models import InvoiceProduct,Invoice
+from customer.serializer import CustomerSerializer
 
 class InvoioceSerializer(serializers.ModelSerializer):
+    customer=CustomerSerializer()
     class Meta:
         model=Invoice
-        fileds='__all__'
+        fields='__all__'
 
 
-class InvoiceProductSerializereeEE(serializers.ModelSerializer):
-
+class InvoiceProductSerializer(serializers.ModelSerializer):
+    invoice=InvoioceSerializer()
     class Meta:
         model=InvoiceProduct
-        fileds='__all__'
+        fields='__all__'
