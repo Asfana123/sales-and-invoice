@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Sidebar from "./Sidebar";
 
 const Product = () => {
   document.title = "Products";
@@ -27,6 +28,7 @@ const Product = () => {
       })
       .then((response) => {
         setProducts(response.data);
+        console.log(products)
       })
       .catch((error) => {
         if (error.response.status === 401) {
@@ -135,7 +137,10 @@ const Product = () => {
   };
 
   return (
-    <div className="p-3 ">
+    <div className="flex h-screen overflow-hidden">
+      <div className="w-1/4"><Sidebar/></div>
+   
+    <div className="w-3/4 ">  
       <div className="flex justify-between m-5">
         <h1 className="text-3xl font-semibold ">Products</h1>
         <input
@@ -154,7 +159,7 @@ const Product = () => {
           </button>
         </div>
       </div>
-      <div className="flex justify-center m-5">
+      <div className="flex justify-center">
         <table className="items-center w-3/4 ">
           <thead className="p-6 bg-gray-700 text-center text-white border ">
             <tr className="">
@@ -269,6 +274,7 @@ const Product = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

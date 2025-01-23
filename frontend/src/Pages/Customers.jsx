@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "font-awesome/css/font-awesome.min.css";
+import Sidebar from "./Sidebar";
 
 const Customers = () => {
   document.title = "Customers";
@@ -32,9 +33,8 @@ const Customers = () => {
         },
       })
       .then((response) => {
-        console.log(response.data);
         setCustomer(response.data);
-        console.log(customers);
+        
       })
 
       .catch((error) => {
@@ -93,6 +93,9 @@ const Customers = () => {
       })
       .catch((error) => {
         handleApiError(error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('access_token');
+          navigate('/');}
       });
   };
 
@@ -108,7 +111,10 @@ const Customers = () => {
         setModal(true);
         setInput(response.data);
       })
-      .catch((error) => handleApiError(error));
+      .catch((error) =>{ handleApiError(error)
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        navigate('/');}});
   };
 
   const updatecustomer = (id) => {
@@ -130,7 +136,10 @@ const Customers = () => {
         );
         setInput();
       })
-      .catch((error) => handleApiError(error));
+      .catch((error) => {handleApiError(error)
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        navigate('/');}});
   };
 
   const deleteCustomer = (id) => {
@@ -145,7 +154,9 @@ const Customers = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 ">
+    <div  className="flex">
+      <div className=""><Sidebar/></div>
+    <div className="w-3/4 min-h-screen p-8 ">
       <h1 className="text-3xl flex jus font-semibold">Customers</h1>
       <button
         className=" border border-lg rounded-md p-2 bg-black text-white mr-10"
@@ -285,6 +296,7 @@ const Customers = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

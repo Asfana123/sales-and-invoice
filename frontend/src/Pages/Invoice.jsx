@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Sidebar from "./Sidebar";
 
 const Invoice = () => {
   const token = localStorage.getItem("access_token");
@@ -17,64 +18,139 @@ const Invoice = () => {
       })
       .then((response) => {
         setInvoices(response.data);
-        console.log(response.data);
       })
       .catch((error) => console.log(error.response.data));
   };
 
-
+  const update_paymentstatus = (id, status) => {
+    axios
+      .patch(
+        `http://127.0.0.1:8000/invoice/${id}`,
+        { payment_status: status },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((response) => {
+        setInvoices((prev) =>
+          prev.map((invoice) =>
+            invoice.id === id
+              ? { ...invoice, payment_status: status }
+              : invoice
+          )
+        );
+      })
+      .catch((error) => console.log(error.response));
+  };
 
   useEffect(() => {
     fetchInvoice();
   }, []);
 
-  return (
-    <div className="min-h-screen p-8 ">
-      <h1 className="text-3xl flex jus font-semibold">Invoices</h1>
-      <button
-        className=" border border-lg rounded-md p-2 bg-black text-white mr-10"
-        onClick={() => navigate("/create invoice")}
-      >
-        create invoice
-      </button>
-      <div className="flex justify-center m-5">
-        <table className="items-center w-3/4 ">
-          <thead className="p-6 bg-gray-700 text-center text-white border ">
-            <tr className="">
-              <th>Invoice Id</th>
-              <th>customer name</th>
-              <th>Issue Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody className="p-2 ">
-            {invoices.map((invoice, id) => (
-              <tr key={invoice.id} className="text-center text-md border">
-                <td className="">#invoice{invoice.id}</td>
-                <td className="">{invoice.customer.name}</td>
-                <td>{invoice.created_at}</td>
-                <td>{invoice.payment_status}</td>
+  const getinvoice=(id)=>{
+    navigate(`/view_invoice/${id}`)
+    
+  }
 
-                <td>
-                  <button className="text-black p-2">
-                    <i
-                      className="fa fa-pencil"
-                      aria-hidden="true"
-                      // onClick={}
-                    ></i>
-                  </button>
-                  <i
-                    className="fa fa-trash text-black p-2 ml-2 aria-hidden"
-                    // onClick={}
-                  />
-                </td>
+
+  const handleUpdate = (id) => navigate(`/create_invoice/${id}`);
+
+
+
+  const handleDelete = (id) => {
+    axios
+      .delete(`http://127.0.0.1:8000/invoice/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setInvoices((prev) => prev.filter((invoice) => invoice.id !== id));
+      })
+      .catch((error) => console.log(error.response));
+  };
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <div className=" w-1/4 bg-white">
+        <Sidebar />
+      </div>
+      <div className="w-3/4 min-h-screen p-5 overflow-auto">
+        <h1 className="text-3xl font-semibold mb-6">Invoices</h1>
+        <button
+          className="border border-lg rounded-md p-2 bg-gray-700 text-white mb-6"
+          onClick={() => navigate("/create_invoice")}
+        >
+          Create Invoice
+        </button>
+        <div className="overflow-auto bg-white rounded-lg shadow-md">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-700 text-white">
+              <tr>
+                <th className="px-4 py-2">Invoice Id</th>
+                <th className="px-4 py-2">Customer Name</th>
+                <th className="px-4 py-2">Issue Date</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {invoices && invoices.length > 0 ? (
+                invoices.map((invoice) => (
+                  <tr
+                    key={invoice.id}
+                    className="text-center border-b hover:bg-gray-100"
+                  >
+                    <td className="px-4 py-2">#invoice{invoice.id}</td>
+                    <td className="px-4 py-2">{invoice.customer.name}</td>
+                    <td className="px-4 py-2">{invoice.created_at}</td>
+                    <td className="px-4 py-2">
+                      {invoice.payment_status === "unpaid" ? (
+                        <select
+                          name="payment_status"
+                          value={invoice.payment_status}
+                          onChange={(e) =>
+                            update_paymentstatus(invoice.id, e.target.value)
+                          }
+                          className="border rounded-md p-1"
+                        >
+                          <option value="paid">Paid</option>
+                          <option value="unpaid">Unpaid</option>
+                        </select>
+                      ) : (
+                        <span>{invoice.payment_status}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 flex justify-center">
+                      <button
+                        className="text-black p-2"
+                        onClick={() => handleUpdate(invoice.id)}
+                      >
+                        <i className="fa fa-pencil" aria-hidden="true" />
+                      </button>
+                      <button
+                        className="text-black p-2 ml-2"
+                        onClick={() => handleDelete(invoice.id)}
+                      >
+                        <i className="fa fa-trash" aria-hidden="true" />
+                      </button>
+
+                      <button onClick={()=>getinvoice(invoice.id)}>view</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4">
+                    No invoices available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
+
 export default Invoice;
