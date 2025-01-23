@@ -78,38 +78,48 @@ class InvoiceApiview(APIView):
             invoice = Invoice.objects.get(id=id)
         except Invoice.DoesNotExist:
             raise NotFound('Invoice not found.')
-        
         data = request.data
         print(data)
+        if 'payment_status' in data:
+            invoice.payment_status = data['payment_status']
         
-        # print(senddata)
-        if invoice:
-            customer_id= data['customer']
-            if customer_id:
-                customer=Customer.objects.get(id=customer_id)
-                invoice.customer=customer
+        
+        customer_id = data.get('customer')
+        if customer_id:
+            customer=Customer.objects.get(id=customer_id)
+            invoice.customer=customer
 
-        # tax=senddata.get('tax',0)
-        # discount=senddata.get('discount',0)
-        # payment_status=senddata.get('payment_status')
         sub_total=0
         products=data.get('products')
-        print(products)
         if products is not None:
-            for item in products: 
-                
+
+            existing_products=InvoiceProduct.objects.filter(invoice=invoice)
+            print(existing_products)
+            # request_product=[item['product_id'] for item in products]
+            # print(request_product)
+            
+            # for product in existing_products:
+            #     if product not in request_product:
+            #         invoice_product.delete()
+
+            for item in products:             
                 try:
                     product=Product.objects.get(id=item['product_id'])
                 except Product.DoesNotExist:
                     raise NotFound('product not available')
-                subtotal=product.price * item['quantity']
-                print(subtotal)
-                InvoiceProduct.objects.create(product=product,invoice=invoice,price=product.price,subtotal=subtotal)
+                try:
+                    invoice_product=InvoiceProduct.objects.get(invoice=invoice, product=product)
+                    invoice_product.quantity=item['quantity']
+                    invoice_product.subtotal=invoice_product.price * item['quantity']
+                    invoice_product.save()
+
+                except InvoiceProduct.DoesNotExist:
+                    subtotal=product.price*item['quantity']
+                    InvoiceProduct.objects.create(product=product, invoice=invoice, price=product.price, subtotal=subtotal, quantity=item['quantity'])
+
                 sub_total=subtotal+sub_total
         print(sub_total)
-    
 
-        # print(total_amount)
         invoice.total_amount=invoice.total_amount+sub_total
         invoice.save()
 

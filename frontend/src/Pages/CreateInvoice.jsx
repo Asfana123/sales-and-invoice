@@ -50,16 +50,16 @@ const CreateInvoice = () => {
       });
   };
 
-  // Update invoice
+
   const updateInvoice = (id) => {
     if (!validation()) return;
-
+    console.log(senddata);
     axios
       .patch(`http://127.0.0.1:8000/invoice/${id}`, senddata, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        console.log(senddata);
+        
         navigate("/invoice");
       })
       .catch((error) => console.error(error.response.data));
@@ -134,7 +134,7 @@ const CreateInvoice = () => {
       });
   };
 
-  // Fetch all customers
+  
   const fetchCustomer = () => {
     axios
       .get("http://127.0.0.1:8000/customer", {
@@ -144,7 +144,7 @@ const CreateInvoice = () => {
       .catch((error) => console.log(error.response.data));
   };
 
-  // Fetch all products
+  
   const fetchProduct = () => {
     axios
       .get("http://127.0.0.1:8000/product", {
@@ -173,7 +173,7 @@ const CreateInvoice = () => {
 
   useEffect(() => setTotal(totalamount), [totalamount]);
 
-  // Initial data fetch
+
   useEffect(() => {
     if (!token) {
       navigate("/");
@@ -183,7 +183,7 @@ const CreateInvoice = () => {
     console.log(selectProducts)
   }, [token, id]);
 
-  // Validation
+  
   const validation = () => {
     if (!selectCustomer.id) {
       setError("Choose a customer");
@@ -195,8 +195,6 @@ const CreateInvoice = () => {
     }
     return true;
   };
-
-  // Create invoice
  
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-gray-100">
@@ -263,13 +261,13 @@ const CreateInvoice = () => {
             </span>
 
             <span className="text-gray-800 font-medium flex-1 ml-4">
-              {product && product.quantity } {/* Correctly display the quantity */}
+              {product && product.quantity } 
             </span>
 
             <span className="text-green-600 font-semibold">
               {product.price}
             </span>
-
+          {id ? <></>:
             <button
               className="m-5"
               onClick={() => {
@@ -280,14 +278,14 @@ const CreateInvoice = () => {
                   ...prev,
                   products: prev.products.filter((p) => p.product_id !== product.id),
                 }));
-              }}
-            >
+              }}>
               remove
             </button>
+          }
           </li>
         );
       })
-    ):<p>no product cchoose</p>}
+    ):<p>no product choose</p>}
   </ul>
 </div>
 
