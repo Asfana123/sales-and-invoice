@@ -88,19 +88,22 @@ class InvoiceApiview(APIView):
         if customer_id:
             customer=Customer.objects.get(id=customer_id)
             invoice.customer=customer
-
+        
+        
         sub_total=0
         products=data.get('products')
         if products is not None:
 
             existing_products=InvoiceProduct.objects.filter(invoice=invoice)
-            print(existing_products)
-            # request_product=[item['product_id'] for item in products]
+            # print(existing_products)
+            request_product=[item['product_id'] for item in products]
             # print(request_product)
             
-            # for product in existing_products:
-            #     if product not in request_product:
-            #         invoice_product.delete()
+            for product in existing_products:
+                 print(product.id)
+                 if product.id not in request_product:
+                    product.delete()
+            # print(products)
 
             for item in products:             
                 try:
@@ -118,11 +121,16 @@ class InvoiceApiview(APIView):
                     InvoiceProduct.objects.create(product=product, invoice=invoice, price=product.price, subtotal=subtotal, quantity=item['quantity'])
 
                 sub_total=subtotal+sub_total
-        print(sub_total)
-
-        invoice.total_amount=invoice.total_amount+sub_total
+        # print(sub_total)
+        if data.get('tax'):
+            invoice.tax=sub_total*int(data['tax'])/100
+            print(invoice.tax)
+        if data.get('discount'):
+            invoice.discount=sub_total * int(data['discount'])/100
+        invoice.total_amount=  sub_total + invoice.tax - invoice.discount
+        # print(invoice.total_amount)
         invoice.save()
-
+        print(invoice.total_amount)
         return Response({"message": "Invoice updated successfully."}, status=status.HTTP_200_OK)
 
     
