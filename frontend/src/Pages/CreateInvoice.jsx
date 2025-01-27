@@ -16,8 +16,7 @@ const CreateInvoice = () => {
 
   const token = localStorage.getItem("access_token");
 
-
-  const [senddata, setSenddata]=useState({
+  const [senddata, setSenddata] = useState({
     customer: null,
     tax: 0,
     discount: 0,
@@ -35,10 +34,10 @@ const CreateInvoice = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        console.log(selectProducts)
+        console.log(selectProducts);
         console.log(senddata);
         setSelectCustomer({});
-        console.log(senddata['products'])
+        console.log(senddata["products"]);
         setSelectProducts([]);
         navigate("/invoice");
       })
@@ -50,21 +49,20 @@ const CreateInvoice = () => {
       });
   };
 
-
   const updateInvoice = (id) => {
     if (!validation()) return;
-    console.log(senddata);
+
     axios
       .patch(`http://127.0.0.1:8000/invoice/${id}`, senddata, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        
+        console.log(senddata);
+        console.log(selectProducts);
         navigate("/invoice");
       })
       .catch((error) => console.error(error.response.data));
   };
-
 
   const handleProduct = (product) => {
     if (product.stock === 0) {
@@ -72,26 +70,29 @@ const CreateInvoice = () => {
       return;
     }
     const existingProduct = selectProducts.find((p) => p.id === product.id);
-    if (existingProduct){
-      setSelectProducts((prev)=>prev.map((p)=>
-        p.id==product.id ? {...p, quantity: p.quantity+1} : p ))
-     
+    console.log(senddata.products);
+    if (existingProduct) {
+      setSelectProducts((prev) =>
+        prev.map((p) =>
+          p.id == product.id ? { ...p, quantity: p.quantity + 1 } : p
+        )
+      );
+
       setSenddata((prev) => ({
         ...prev,
-        products: prev.products.map((p)=>
-        p.product_id===product.id ?
-      {...p, quantity:p.quantity+1}:p)
+        products: prev.products.map((p) =>
+          p.product_id === product.id ? { ...p, quantity: p.quantity + 1 } : p
+        ),
+      }));
+    } else {
+      setSelectProducts((prev) => [...prev, { ...product, quantity: 1 }]);
+      setSenddata((prev) => ({
+        ...prev,
+        products: [...prev.products, { product_id: product.id, quantity: 1 }],
       }));
     }
-    else {
-      // If the product doesn't exist, add it with quantity 1
-      setSelectProducts((prev) => [...prev, { ...product, quantity: 1 }]);
-      setSenddata((prev)=>({
-        ...prev, products:[...prev.products, {product_id:product.id, quantity:1}]
-      }))
-    }
-  }
-  
+  };
+
   const fetch_data = (id) => {
     if (!id) {
       console.error("Invalid invoice ID");
@@ -103,28 +104,29 @@ const CreateInvoice = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        console.log(response.data)
+        console.log(response.data);
         const invoice = response.data.invoice;
         const fetchedProducts = response.data.products.map((item) => ({
           ...item.product,
-          quantity: item.quantity, 
+          quantity: item.quantity,
         }));
-        console.log()
+        console.log(fetchedProducts);
         setSelectCustomer(invoice.customer || {});
         setSelectProducts(fetchedProducts);
-        
-          setSenddata({
-            customer: selectCustomer.id || null,
-            tax: 0,
-            discount: 0,
-            products: selectProducts.map((product) => ({
-              product_id: product.id,
-              quantity: 1,
-            })),
-            status: "unpaid",
-          });
-        })
-        
+
+        setSenddata({
+          customer: selectCustomer.id || null,
+          tax: 0,
+          discount: 0,
+          products: fetchedProducts.map((product) => ({
+            product_id: product.id,
+            quantity: 1,
+          })),
+          status: "unpaid",
+        });
+      })
+
+      //  console.log(senddata.products)
       .catch((error) => {
         console.error("Error fetching data:", error.response);
         if (error.response?.status === 401) {
@@ -134,7 +136,6 @@ const CreateInvoice = () => {
       });
   };
 
-  
   const fetchCustomer = () => {
     axios
       .get("http://127.0.0.1:8000/customer", {
@@ -144,7 +145,6 @@ const CreateInvoice = () => {
       .catch((error) => console.log(error.response.data));
   };
 
-  
   const fetchProduct = () => {
     axios
       .get("http://127.0.0.1:8000/product", {
@@ -162,17 +162,16 @@ const CreateInvoice = () => {
   // Calculate total amount
   const totalamount = useMemo(() => {
     const subtotal = selectProducts.reduce(
-      (sum, product) => sum + parseFloat(product.price)*product.quantity,
+      (sum, product) => sum + parseFloat(product.price) * product.quantity,
       0
     );
 
     const tax = (subtotal * senddata.tax) / 100;
     const discount = (subtotal * senddata.discount) / 100;
-    return subtotal + tax - discount ;
+    return subtotal + tax - discount;
   }, [selectProducts, senddata.tax, senddata.discount]);
 
   useEffect(() => setTotal(totalamount), [totalamount]);
-
 
   useEffect(() => {
     if (!token) {
@@ -180,10 +179,9 @@ const CreateInvoice = () => {
     } else if (id) {
       fetch_data(id);
     }
-    console.log(selectProducts)
+    console.log(selectProducts);
   }, [token, id]);
 
-  
   const validation = () => {
     if (!selectCustomer.id) {
       setError("Choose a customer");
@@ -195,12 +193,12 @@ const CreateInvoice = () => {
     }
     return true;
   };
- 
+
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-gray-100">
       <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
         <h1 className="text-xl font-semibold text-center mb-6">
-         {id? 'update invoice' : 'invoice Creation'}
+          {id ? "update invoice" : "invoice Creation"}
         </h1>
         {error && <p>{error}</p>}
         <div className="flex justify-between items-center mb-4">
@@ -227,7 +225,7 @@ const CreateInvoice = () => {
           </button>
         </div>
 
-        {selectCustomer&& selectCustomer.id && (
+        {selectCustomer && selectCustomer.id && (
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Customer Details</h2>
             <div className="space-y-1">
@@ -239,56 +237,62 @@ const CreateInvoice = () => {
           </div>
         )}
 
-<div className="mb-6">
-  <h2 className="text-xl font-semibold mb-4">Products</h2>
-  <ul>
-    {selectProducts && selectProducts.length > 0 ? (
-      selectProducts.map((product, index) => {
-        // Find the product in senddata.products to get its quantity
-        const qty = senddata.products.find((pro) => pro.product_id === product.id);
-
-        return (
-          <li
-            key={product.id}
-            className="flex items-center justify-between p-4 hover:bg-gray-100 transition duration-300 rounded-md mb-2"
-          >
-            <span className="text-lg font-semibold text-gray-700">
-              {index + 1}
-            </span>
-
-            <span className="text-gray-800 font-medium flex-1 ml-4">
-              {product.name}
-            </span>
-
-            <span className="text-gray-800 font-medium flex-1 ml-4">
-              {product && product.quantity } 
-            </span>
-
-            <span className="text-green-600 font-semibold">
-              {product.price}
-            </span>
-          {id ? <></>:
-            <button
-              className="m-5"
-              onClick={() => {
-                setSelectProducts((prev) =>
-                  prev.filter((item) => item.id !== product.id)
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Products</h2>
+          <ul>
+            {selectProducts && selectProducts.length > 0 ? (
+              selectProducts.map((product, index) => {
+                // Find the product in senddata.products to get its quantity
+                const qty = senddata.products.find(
+                  (pro) => pro.product_id === product.id
                 );
-                setSenddata((prev) => ({
-                  ...prev,
-                  products: prev.products.filter((p) => p.product_id !== product.id),
-                }));
-              }}>
-              remove
-            </button>
-          }
-          </li>
-        );
-      })
-    ):<p>no product choose</p>}
-  </ul>
-</div>
 
+                return (
+                  <li
+                    key={product.id}
+                    className="flex items-center justify-between p-4 hover:bg-gray-100 transition duration-300 rounded-md mb-2"
+                  >
+                    <span className="text-lg font-semibold text-gray-700">
+                      {index + 1}
+                    </span>
+
+                    <span className="text-gray-800 font-medium flex-1 ml-4">
+                      {product.name}
+                    </span>
+
+                    <span className="text-gray-800 font-medium flex-1 ml-4">
+                      {product && product.quantity}
+                    </span>
+
+                    <span className="text-green-600 font-semibold">
+                      {product.price}
+                    </span>
+
+                      <button
+                        className="m-5"
+                        onClick={() => {
+                          setSelectProducts((prev) =>
+                            prev.filter((item) => item.id !== product.id)
+                          );
+                          setSenddata((prev) => ({
+                            ...prev,
+                            products: prev.products.filter(
+                              (p) => p.product_id !== product.id
+                            ),
+                          }));
+                        }}
+                      >
+                        remove
+                      </button>
+                  
+                  </li>
+                );
+              })
+            ) : (
+              <p>no product choose</p>
+            )}
+          </ul>
+        </div>
 
         <div className="mb-6">
           <div className="flex gap-4">
@@ -299,7 +303,7 @@ const CreateInvoice = () => {
                 type="text"
                 maxLength={2}
                 className="p-2 border border-gray-300 rounded-md"
-                value= {senddata.tax||0}
+                value={senddata.tax || 0}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value > 0) {
@@ -342,22 +346,26 @@ const CreateInvoice = () => {
         </div>
 
         <div className="text-right mb-6">
-          <p className="font-semibold text-lg">Total: {Number(total).toFixed(2)}</p>
+          <p className="font-semibold text-lg">
+            Total: {Number(total).toFixed(2)}
+          </p>
         </div>
 
-        <div className="text-center">{id ?(
-          <button
-            onClick={()=>updateInvoice(id)}
-            className="bg-blue-500 text-white p-3 rounded-md w-full md:w-auto"
-          >
-            update Invoice
-          </button>):(
+        <div className="text-center">
+          {id ? (
             <button
-            onClick={createInvoice}
-            className="bg-blue-500 text-white p-3 rounded-md w-full md:w-auto"
-          >
-            Create Invoice
-          </button>
+              onClick={() => updateInvoice(id)}
+              className="bg-blue-500 text-white p-3 rounded-md w-full md:w-auto"
+            >
+              update Invoice
+            </button>
+          ) : (
+            <button
+              onClick={createInvoice}
+              className="bg-blue-500 text-white p-3 rounded-md w-full md:w-auto"
+            >
+              Create Invoice
+            </button>
           )}
         </div>
       </div>
@@ -420,7 +428,7 @@ const CreateInvoice = () => {
                       <button
                         className="bg-gray-600 text-white px-2 rounded-sm"
                         onClick={() => {
-                          handleProduct(product)  
+                          handleProduct(product);
                         }}
                       >
                         Select

@@ -95,40 +95,47 @@ class InvoiceApiview(APIView):
         if products is not None:
 
             existing_products=InvoiceProduct.objects.filter(invoice=invoice)
-            # print(existing_products)
             request_product=[item['product_id'] for item in products]
-            # print(request_product)
-            
+     
             for product in existing_products:
-                 print(product.id)
+          
                  if product.id not in request_product:
+                    product.product.stock+=product.quantity
+                    product.product.save()
                     product.delete()
-            # print(products)
 
-            for item in products:             
+            for item in products:     
+                print(item)        
                 try:
                     product=Product.objects.get(id=item['product_id'])
+                    print(product)
                 except Product.DoesNotExist:
-                    raise NotFound('product not available')
+                    raise NotFound ('product not available')
                 try:
                     invoice_product=InvoiceProduct.objects.get(invoice=invoice, product=product)
                     invoice_product.quantity=item['quantity']
                     invoice_product.subtotal=invoice_product.price * item['quantity']
                     invoice_product.save()
+                    print(invoice_product.subtotal)
+                    product.stock=product.stock-invoice_product.quantity
+                    product.save()
+                    print(product.stock)
+                    
 
                 except InvoiceProduct.DoesNotExist:
                     subtotal=product.price*item['quantity']
-                    InvoiceProduct.objects.create(product=product, invoice=invoice, price=product.price, subtotal=subtotal, quantity=item['quantity'])
+                    invoice_product=InvoiceProduct.objects.create(product=product, invoice=invoice, price=product.price, subtotal=subtotal, quantity=item['quantity'])
+                    # sub_total=sub_total+invoice_product.subtotal
 
-                sub_total=subtotal+sub_total
-        # print(sub_total)
-        if data.get('tax'):
+                sub_total=sub_total+invoice_product.subtotal
+        print(sub_total)
+        if data.get('tax',0):
             invoice.tax=sub_total*int(data['tax'])/100
-            print(invoice.tax)
-        if data.get('discount'):
+            # print(invoice.tax)
+        if data.get('discount',0):
             invoice.discount=sub_total * int(data['discount'])/100
+       
         invoice.total_amount=  sub_total + invoice.tax - invoice.discount
-        # print(invoice.total_amount)
         invoice.save()
         print(invoice.total_amount)
         return Response({"message": "Invoice updated successfully."}, status=status.HTTP_200_OK)

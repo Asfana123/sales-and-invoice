@@ -127,6 +127,9 @@ const Invoice = () => {
                       >
                         <i className="fa fa-pencil" aria-hidden="true" />
                       </button>
+                      
+                      <button onClick={()=>getinvoice(invoice.id)}><i className="fa fa-eye p-3"></i></button>
+
                       <button
                         className="text-black p-2 ml-2"
                         onClick={() => handleDelete(invoice.id)}
@@ -134,7 +137,6 @@ const Invoice = () => {
                         <i className="fa fa-trash" aria-hidden="true" />
                       </button>
 
-                      <button onClick={()=>getinvoice(invoice.id)}>view</button>
                     </td>
                   </tr>
                 ))
